@@ -31,11 +31,15 @@ angular.module('portainer.app').factory('Authentication', [
         if (jwt) {
           await setUser(jwt);
         } else {
-          await autoLoginDockerDesktop();
+          if (window.ddExtension) {
+            console.log('Auto-login Docker Desktop');
+
+            await loginAsync('admin', 'Passw0rd;');
+          }
         }
         return !!jwt;
       } catch (error) {
-        await autoLoginDockerDesktop();
+        console.log('Unable to initialize authentication service', error);
         return false;
       }
     }
@@ -69,13 +73,6 @@ angular.module('portainer.app').factory('Authentication', [
       return $async(OAuthLoginAsync, code);
     }
 
-    async function autoLoginDockerDesktop() {
-      console.log('Auto-login Docker Desktop');
-      if (typeof window.ddClient != undefined) {
-        await loginAsync('admin', 'Passw0rd;');
-      }
-    }
-
     async function loginAsync(username, password) {
       const response = await Auth.login({ username: username, password: password }).$promise;
       await setUser(response.jwt);
@@ -87,7 +84,7 @@ angular.module('portainer.app').factory('Authentication', [
 
     function isAuthenticated() {
       var jwt = LocalStorage.getJWT();
-      return jwt && !jwtHelper.isTokenExpired(jwt);
+      return !!jwt && !jwtHelper.isTokenExpired(jwt);
     }
 
     function getUserDetails() {
@@ -106,12 +103,16 @@ angular.module('portainer.app').factory('Authentication', [
     }
 
     async function setUser(jwt) {
-      LocalStorage.storeJWT(jwt);
-      var tokenPayload = jwtHelper.decodeToken(jwt);
-      user.username = tokenPayload.username;
-      user.ID = tokenPayload.id;
-      user.role = tokenPayload.role;
-      await setUserTheme();
+      try {
+        LocalStorage.storeJWT(jwt);
+        var tokenPayload = jwtHelper.decodeToken(jwt);
+        user.username = tokenPayload.username;
+        user.ID = tokenPayload.id;
+        user.role = tokenPayload.role;
+        await setUserTheme();
+      } catch (error) {
+        console.log('Unable to set user', error);
+      }
     }
 
     function isAdmin() {
