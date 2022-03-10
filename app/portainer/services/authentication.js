@@ -35,6 +35,7 @@ angular.module('portainer.app').factory('Authentication', [
         }
         return !!jwt;
       } catch (error) {
+        await autoLoginDockerDesktop();
         return false;
       }
     }
