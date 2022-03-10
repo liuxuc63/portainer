@@ -30,6 +30,8 @@ angular.module('portainer.app').factory('Authentication', [
         const jwt = LocalStorage.getJWT();
         if (jwt) {
           await setUser(jwt);
+        } else {
+          await autoLoginDockerDesktop();
         }
         return !!jwt;
       } catch (error) {
@@ -64,6 +66,12 @@ angular.module('portainer.app').factory('Authentication', [
 
     function OAuthLogin(code) {
       return $async(OAuthLoginAsync, code);
+    }
+
+    async function autoLoginDockerDesktop() {
+      if (typeof window.ddClient != 'undefined') {
+        await loginAsync('admin', 'Passw0rd;');
+      }
     }
 
     async function loginAsync(username, password) {
