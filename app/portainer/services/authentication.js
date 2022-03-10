@@ -69,7 +69,7 @@ angular.module('portainer.app').factory('Authentication', [
     }
 
     async function autoLoginDockerDesktop() {
-      if (typeof window.ddClient != 'undefined') {
+      if (typeof window.ddClient != undefined) {
         await loginAsync('admin', 'Passw0rd;');
       }
     }
