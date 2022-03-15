@@ -31,11 +31,7 @@ angular.module('portainer.app').factory('Authentication', [
         if (jwt) {
           await setUser(jwt);
         } else {
-          if (window.ddExtension) {
-            console.log('Auto-login Docker Desktop');
-
-            await loginAsync('admin', 'Passw0rd;');
-          }
+          autoLoginExtension();
         }
         return !!jwt;
       } catch (error) {
@@ -54,6 +50,7 @@ angular.module('portainer.app').factory('Authentication', [
       EndpointProvider.clean();
       LocalStorage.cleanAuthData();
       LocalStorage.storeLoginStateUUID('');
+      autoLoginExtension();
     }
 
     function logout(performApiLogout) {
@@ -112,6 +109,13 @@ angular.module('portainer.app').factory('Authentication', [
         await setUserTheme();
       } catch (error) {
         console.log('Unable to set user', error);
+      }
+    }
+
+    function autoLoginExtension() {
+      if (window.ddExtension) {
+        console.debug('Auto-login Docker Desktop');
+        login('admin', 'Passw0rd;');
       }
     }
 
