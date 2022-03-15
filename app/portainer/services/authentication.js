@@ -28,13 +28,16 @@ angular.module('portainer.app').factory('Authentication', [
     async function initAsync() {
       try {
         const jwt = LocalStorage.getJWT();
-        if (jwt) {
+        if (!!jwt && !jwtHelper.isTokenExpired(jwt)) {
           await setUser(jwt);
         } else {
-          autoLoginExtension();
+          tryAutoLoginExtension();
         }
         return !!jwt;
       } catch (error) {
+        if (error.status === 401) {
+          tryAutoLoginExtension();
+        }
         console.log('Unable to initialize authentication service', error);
         return false;
       }
@@ -50,7 +53,7 @@ angular.module('portainer.app').factory('Authentication', [
       EndpointProvider.clean();
       LocalStorage.cleanAuthData();
       LocalStorage.storeLoginStateUUID('');
-      autoLoginExtension();
+      tryAutoLoginExtension();
     }
 
     function logout(performApiLogout) {
@@ -63,7 +66,15 @@ angular.module('portainer.app').factory('Authentication', [
 
     async function OAuthLoginAsync(code) {
       const response = await OAuth.validate({ code: code }).$promise;
-      await setUser(response.jwt);
+      const jwt = setJWTFromResponse(response);
+      await setUser(jwt);
+    }
+
+    function setJWTFromResponse(response) {
+      const jwt = response.jwt;
+      LocalStorage.storeJWT(jwt);
+
+      return response.jwt;
     }
 
     function OAuthLogin(code) {
@@ -72,7 +83,8 @@ angular.module('portainer.app').factory('Authentication', [
 
     async function loginAsync(username, password) {
       const response = await Auth.login({ username: username, password: password }).$promise;
-      await setUser(response.jwt);
+      const jwt = setJWTFromResponse(response);
+      await setUser(jwt);
     }
 
     function login(username, password) {
@@ -100,19 +112,14 @@ angular.module('portainer.app').factory('Authentication', [
     }
 
     async function setUser(jwt) {
-      try {
-        LocalStorage.storeJWT(jwt);
-        var tokenPayload = jwtHelper.decodeToken(jwt);
-        user.username = tokenPayload.username;
-        user.ID = tokenPayload.id;
-        user.role = tokenPayload.role;
-        await setUserTheme();
-      } catch (error) {
-        console.log('Unable to set user', error);
-      }
+      var tokenPayload = jwtHelper.decodeToken(jwt);
+      user.username = tokenPayload.username;
+      user.ID = tokenPayload.id;
+      user.role = tokenPayload.role;
+      await setUserTheme();
     }
 
-    function autoLoginExtension() {
+    function tryAutoLoginExtension() {
       if (window.ddExtension) {
         console.debug('Auto-login Docker Desktop');
         login('admin', 'Passw0rd;');
@@ -120,10 +127,7 @@ angular.module('portainer.app').factory('Authentication', [
     }
 
     function isAdmin() {
-      if (user.role === 1) {
-        return true;
-      }
-      return false;
+      return user.role === 1;
     }
 
     return service;
