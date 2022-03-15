@@ -28,18 +28,14 @@ angular.module('portainer.app').factory('Authentication', [
     async function initAsync() {
       try {
         const jwt = LocalStorage.getJWT();
-        if (!!jwt && !jwtHelper.isTokenExpired(jwt)) {
-          await setUser(jwt);
-        } else {
-          tryAutoLoginExtension();
+        if (!jwt || jwtHelper.isTokenExpired(jwt)) {
+          return tryAutoLoginExtension();
         }
-        return !!jwt;
+        await setUser(jwt);
+        return true;
       } catch (error) {
-        if (error.status === 401) {
-          tryAutoLoginExtension();
-        }
         console.log('Unable to initialize authentication service', error);
-        return false;
+        return tryAutoLoginExtension();
       }
     }
 
@@ -120,14 +116,15 @@ angular.module('portainer.app').factory('Authentication', [
     }
 
     function tryAutoLoginExtension() {
-      if (window.ddExtension) {
-        console.debug('Auto-login Docker Desktop');
-        login('admin', 'Passw0rd;');
+      if (!window.ddExtension) {
+        return false;
       }
+      console.debug('Auto-login Docker Desktop');
+      return login('admin', 'Passw0rd;');
     }
 
     function isAdmin() {
-      return user.role === 1;
+      return !!user && user.role === 1;
     }
 
     return service;
