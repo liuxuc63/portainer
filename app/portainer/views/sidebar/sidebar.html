@@ -5,7 +5,7 @@
       <img ng-if="logo" ng-src="{{ logo }}" class="img-responsive logo" />
       <img ng-if="!logo" src="~@/assets/images/logo.png" class="img-responsive logo" alt="Portainer" />
     </a>
-    <a ng-click="toggleSidebar()"> <span class="menu-icon glyphicon glyphicon-transfer"></span></a>
+    <a ng-click="toggleSidebar()"><span class="menu-icon glyphicon glyphicon-transfer"></span></a>
   </div>
   <div class="sidebar-content">
     <ul class="sidebar">
@@ -23,7 +23,7 @@
           admin-access="isAdmin"
         ></kubernetes-sidebar>
 
-        <azure-sidebar ng-if="applicationState.endpoint.mode.provider === 'AZURE'" endpoint-id="endpointId"></azure-sidebar>
+        <azure-sidebar ng-if="applicationState.endpoint.mode.provider === 'AZURE'" endpoint-id="endpointId"> </azure-sidebar>
 
         <docker-sidebar
           ng-if="applicationState.endpoint.mode.provider !== 'AZURE' && applicationState.endpoint.mode.provider !== 'KUBERNETES'"
