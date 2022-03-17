@@ -12,6 +12,10 @@ export function HeaderContent({ children }: PropsWithChildren<unknown>) {
   useHeaderContext();
   const { user } = useUser();
 
+  if ((window as Window).ddExtension) {
+    return null;
+  }
+
   return (
     <div className="breadcrumb-links">
       <div className="pull-left">{children}</div>

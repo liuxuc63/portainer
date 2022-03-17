@@ -6,6 +6,10 @@ class SidebarMenuController {
     this.state = {
       forceOpen: false,
     };
+
+    if (window.ddExtension) {
+      this.isSidebarOpen = false;
+    }
   }
 
   isOpen() {
