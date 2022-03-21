@@ -1,6 +1,8 @@
 FROM portainer/base
 
 COPY dist /
+COPY metadata.json /
+COPY docker-extension/build/ /docker-extension
 
 VOLUME /data
 WORKDIR /
