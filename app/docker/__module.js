@@ -19,7 +19,7 @@ angular.module('portainer.docker', ['portainer.app', containersModule, component
             $state.go('portainer.home');
             return;
           }
-          var preEndpoint = EndpointProvider.endpoints();
+          var preEndpoint = EndpointProvider.endpoint();
           try {
             const status = await checkEndpointStatus(endpoint);
 
