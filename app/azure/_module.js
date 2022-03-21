@@ -22,7 +22,7 @@ angular
               $state.go('portainer.home');
               return;
             }
-            var preEndpoint = EndpointProvider.endpoints();
+            var preEndpoint = EndpointProvider.endpoint();
             try {
               EndpointProvider.setEndpointID(endpoint.Id);
               EndpointProvider.setEndpointPublicURL(endpoint.PublicURL);
